@@ -8,30 +8,29 @@ module Rprifrc
     end
 
     def run
-
-      loop do
-        pm = ProcessManager.new(process_to_invoke)
-
-        pm.ensure_started
-
-        t = Thread.new {
-          ResourceChangeBlockRunner.new(resource).run(5) do
-            pm.ensure_killed
-          end
-        }
-
-        result = pm.await
-        t.kill
-
-        if !result
-          break
-        end
+      while !interrupted do
+        run_process
       end
     end
 
     private
 
-    attr_reader :args
+    attr_reader :args, :interrupted
+
+    def run_process
+      pm = ProcessManager.new(process_to_invoke)
+      pm.ensure_started
+
+      t = Thread.new {
+        ResourceChangeBlockRunner.new(resource).run(5) do
+          pm.ensure_killed
+        end
+      }
+
+      @interrupted = !pm.await
+
+      t.kill
+    end
 
     def resource
       args[0]
