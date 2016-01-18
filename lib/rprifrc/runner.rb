@@ -8,7 +8,6 @@ module Rprifrc
     end
 
     def run
-      return usage if args.length < 2
 
       loop do
         pm = ProcessManager.new(process_to_invoke)
@@ -33,10 +32,6 @@ module Rprifrc
     private
 
     attr_reader :args
-
-    def usage
-      $stderr.puts("Usage: bundle exec rprifc https://user:password@some_resource process_to_invoke [with optional arguments]")
-    end
 
     def resource
       args[0]
