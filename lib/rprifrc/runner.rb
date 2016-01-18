@@ -1,4 +1,5 @@
 require "rprifrc/resource_change_block_runner"
+require "rprifrc/process_manager"
 
 module Rprifrc
   class Runner
@@ -10,26 +11,21 @@ module Rprifrc
       return usage if args.length < 2
 
       loop do
-        stdin, stdout, stderr, process_handle = Open3.popen3(*process_to_invoke)
-        t = nil
-        begin
-          t = Thread.new {
-            ResourceChangeBlockRunner.new(resource).run(5) do
-              Process.kill("TERM", process_handle.pid)
-            end
-          }
+        pm = ProcessManager.new(process_to_invoke)
 
-          process_handle.value
-        rescue
-          begin
-            Process.kill("TERM", process_handle.pid)
-          rescue
+        pm.ensure_started
+
+        t = Thread.new {
+          ResourceChangeBlockRunner.new(resource).run(5) do
+            pm.ensure_killed
           end
+        }
 
-          #TODO: log exception here
+        result = pm.await
+        t.kill
+
+        if !result
           break
-        ensure
-          t.kill
         end
       end
     end
