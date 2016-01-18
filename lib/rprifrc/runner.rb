@@ -1,3 +1,5 @@
+require "rprifrc/resource_change_block_runner"
+
 module Rprifrc
   class Runner
     def initialize(args)
@@ -12,17 +14,9 @@ module Rprifrc
         t = nil
         begin
           t = Thread.new {
-            last_response = get_resource
-            loop {
-              sleep(5)
-              new_response = get_resource
-              if new_response != last_response
-                Process.kill("TERM", process_handle.pid)
-              end
-
-              last_response = new_response
-
-            }
+            ResourceChangeBlockRunner.new(resource).run(5) do
+              Process.kill("TERM", process_handle.pid)
+            end
           }
 
           process_handle.value
@@ -46,10 +40,6 @@ module Rprifrc
 
     def usage
       $stderr.puts("Usage: bundle exec rprifc https://user:password@some_resource process_to_invoke [with optional arguments]")
-    end
-
-    def get_resource
-      HTTP.follow.get(resource).to_s
     end
 
     def resource
