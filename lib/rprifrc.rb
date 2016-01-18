@@ -8,9 +8,10 @@ module Rprifrc
   def self.main(args)
     return self.usage if args.length < 2
 
+    rcbr = ResourceChangeBlockRunner.new(args[0])
     process_manager = ProcessManager.new(args[1..-1])
 
-    Runner.new(args, process_manager).run
+    Runner.new(rcbr, process_manager).run
   end
 
   def self.usage

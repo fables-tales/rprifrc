@@ -3,8 +3,8 @@ require "rprifrc/process_manager"
 
 module Rprifrc
   class Runner
-    def initialize(args, process_manager)
-      @args = args
+    def initialize(resource_change_block_runner, process_manager)
+      @resource_change_block_runner = resource_change_block_runner
       @process_manager = process_manager
     end
 
@@ -16,13 +16,13 @@ module Rprifrc
 
     private
 
-    attr_reader :args, :interrupted, :process_manager
+    attr_reader :resource_change_block_runner, :interrupted, :process_manager
 
     def run_process
       process_manager.ensure_started
 
       t = Thread.new {
-        ResourceChangeBlockRunner.new(resource).run(5) do
+        resource_change_block_runner.run(5) do
           process_manager.ensure_killed
         end
       }
@@ -30,14 +30,6 @@ module Rprifrc
       @interrupted = !process_manager.await
 
       t.kill
-    end
-
-    def resource
-      args[0]
-    end
-
-    def process_to_invoke
-      args[1..-1]
     end
   end
 end
