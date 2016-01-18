@@ -10,14 +10,17 @@ RSpec.describe Rprifrc do
     end
 
     it "does not give a usage message when it provided the correct arguments" do
+      t = nil
+
       expect {
         t = Thread.new do
           Rprifrc.main(["https://httpbin.org/", "echo", ""])
         end
-        sleep(1)
-        t.raise("fail")
-        t.join
+
+        sleep(2)
       }.not_to output.to_stderr
+
+      t.kill
     end
 
 
@@ -30,6 +33,7 @@ RSpec.describe Rprifrc do
       end
 
       after do
+        sleep(0.25)
         @t.raise("fail")
         @t.join
         # Assert the process is killed after teardown

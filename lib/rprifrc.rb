@@ -17,8 +17,6 @@ module Rprifrc
             loop {
               sleep(5)
               new_response = HTTP.follow.get(resource).to_s
-              p "resp"
-              p new_response != last_response
               if new_response != last_response
                 Process.kill("TERM", process_handle.pid)
               end
@@ -35,14 +33,10 @@ module Rprifrc
           rescue
           end
 
-
-          p "exception"
-          p $!
           #TODO: log exception here
           break
         ensure
-          p "kill"
-          p t.kill
+          t.kill
         end
       end
     else
